@@ -70,12 +70,11 @@ def init_db():
                         (t['name'], t['username'], t['password'], t['doj']))
     conn.commit()
     
-    # Reset: Delete all leaves and re-insert only valid past leaves
-    conn.execute('DELETE FROM leaves')
-    conn.commit()
-    
-    # Pre-load past leaves (26-Apr to 25-May-2026)
-    past_leaves = [
+    # Only pre-load past leaves if table is empty (first deploy)
+    existing_leaves = conn.execute('SELECT COUNT(*) as cnt FROM leaves').fetchone()
+    if existing_leaves['cnt'] == 0:
+        # Pre-load past leaves (26-Apr to 25-May-2026)
+        past_leaves = [
         # Khemchandra: 5 leaves (CL:1, SL:1, AL:3)
         ('khemchandra', 'CL', '2026-04-29', '2026-04-29', 1, 'Past leave'),
         ('khemchandra', 'SL', '2026-04-30', '2026-04-30', 1, 'Past leave'),
@@ -113,13 +112,13 @@ def init_db():
         ('shreya', 'AL', '2026-05-21', '2026-05-21', 1, 'Past leave'),
     ]
         
-    for username, leave_type, from_date, to_date, days, reason in past_leaves:
-        trainer = conn.execute('SELECT id FROM trainers WHERE username = ?', (username,)).fetchone()
-        if trainer:
-            conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
-                          VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                        (trainer['id'], leave_type, from_date, to_date, days, reason, '2026-05-25'))
-    conn.commit()
+        for username, leave_type, from_date, to_date, days, reason in past_leaves:
+            trainer = conn.execute('SELECT id FROM trainers WHERE username = ?', (username,)).fetchone()
+            if trainer:
+                conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
+                              VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                            (trainer['id'], leave_type, from_date, to_date, days, reason, '2026-05-25'))
+        conn.commit()
     
     conn.close()
 
@@ -243,10 +242,25 @@ def apply_leave():
         
         days = calculate_business_days(from_date, to_date)
         
-        # Block leaves before 26-May-2026
-        min_date = '2026-05-26'
-        if from_date < min_date:
-            flash('Cannot apply leave before 26-May-2026. Contact admin for past leaves.', 'error')
+        # Block leaves outside current payroll month (26th to 25th)
+        today = date.today()
+        if today.day >= 26:
+            payroll_start = date(today.year, today.month, 26)
+            if today.month == 12:
+                payroll_end = date(today.year + 1, 1, 25)
+            else:
+                payroll_end = date(today.year, today.month + 1, 25)
+        else:
+            if today.month == 1:
+                payroll_start = date(today.year - 1, 12, 26)
+            else:
+                payroll_start = date(today.year, today.month - 1, 26)
+            payroll_end = date(today.year, today.month, 25)
+        
+        from_date_obj = datetime.strptime(from_date, '%Y-%m-%d').date()
+        
+        if from_date_obj < payroll_start or from_date_obj > payroll_end:
+            flash(f'You can only apply leave between {payroll_start.strftime("%d-%b-%Y")} and {payroll_end.strftime("%d-%b-%Y")}.', 'error')
         elif days <= 0:
             flash('Invalid date range', 'error')
         else:
@@ -375,6 +389,175 @@ def admin_download_detail():
         mimetype='text/csv',
         as_attachment=True,
         download_name=f'Leave_Detail_Report_{date.today().strftime("%d%m%Y")}.csv'
+    )
+
+
+# --- ADMIN: Reset Password ---
+@app.route('/admin/reset-password/<int:trainer_id>', methods=['GET', 'POST'])
+def admin_reset_password(trainer_id):
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    conn = get_db()
+    trainer = conn.execute('SELECT * FROM trainers WHERE id = ?', (trainer_id,)).fetchone()
+    if request.method == 'POST':
+        new_password = request.form['new_password'].strip()
+        if len(new_password) < 4:
+            flash('Password must be at least 4 characters', 'error')
+        else:
+            conn.execute('UPDATE trainers SET password = ? WHERE id = ?', (new_password, trainer_id))
+            conn.commit()
+            flash(f'Password updated for {trainer["name"]}', 'success')
+            conn.close()
+            return redirect(url_for('admin_dashboard'))
+    conn.close()
+    return render_template('admin_reset_password.html', trainer=trainer)
+
+
+# --- ADMIN: Add Trainer ---
+@app.route('/admin/add-trainer', methods=['GET', 'POST'])
+def admin_add_trainer():
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        name = request.form['name'].strip()
+        username = request.form['username'].strip().lower()
+        password = request.form['password'].strip()
+        doj = request.form['doj']
+        conn = get_db()
+        existing = conn.execute('SELECT id FROM trainers WHERE username = ?', (username,)).fetchone()
+        if existing:
+            flash('Username already exists', 'error')
+        else:
+            conn.execute('INSERT INTO trainers (name, username, password, doj) VALUES (?, ?, ?, ?)',
+                        (name, username, password, doj))
+            conn.commit()
+            flash(f'Trainer {name} added successfully!', 'success')
+            conn.close()
+            return redirect(url_for('admin_dashboard'))
+        conn.close()
+    return render_template('admin_add_trainer.html')
+
+
+# --- ADMIN: Remove Trainer ---
+@app.route('/admin/remove-trainer/<int:trainer_id>', methods=['POST'])
+def admin_remove_trainer(trainer_id):
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    conn = get_db()
+    trainer = conn.execute('SELECT name FROM trainers WHERE id = ?', (trainer_id,)).fetchone()
+    conn.execute('DELETE FROM leaves WHERE trainer_id = ?', (trainer_id,))
+    conn.execute('DELETE FROM trainers WHERE id = ?', (trainer_id,))
+    conn.commit()
+    conn.close()
+    flash(f'Trainer {trainer["name"]} removed', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
+# --- ADMIN: Delete a Leave ---
+@app.route('/admin/delete-leave/<int:leave_id>', methods=['POST'])
+def admin_delete_leave(leave_id):
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    conn = get_db()
+    conn.execute('DELETE FROM leaves WHERE id = ?', (leave_id,))
+    conn.commit()
+    conn.close()
+    flash('Leave record deleted', 'success')
+    return redirect(request.referrer or url_for('admin_leaves'))
+
+
+# --- ADMIN: Individual Trainer View ---
+@app.route('/admin/trainer/<int:trainer_id>')
+def admin_trainer_view(trainer_id):
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    conn = get_db()
+    trainer = conn.execute('SELECT * FROM trainers WHERE id = ?', (trainer_id,)).fetchone()
+    leaves = conn.execute('SELECT * FROM leaves WHERE trainer_id = ? ORDER BY from_date DESC',
+                         (trainer_id,)).fetchall()
+    conn.close()
+    earned = calculate_leave_balance(trainer['doj'])
+    used = get_used_leaves(trainer_id)
+    balance = {
+        'AL': {'earned': earned['AL'], 'used': used['AL'], 'pending': earned['AL'] - used['AL']},
+        'SL': {'earned': earned['SL'], 'used': used['SL'], 'pending': earned['SL'] - used['SL']},
+        'CL': {'earned': earned['CL'], 'used': used['CL'], 'pending': earned['CL'] - used['CL']},
+    }
+    return render_template('admin_trainer_view.html', trainer=trainer, balance=balance, leaves=leaves)
+
+
+# --- ADMIN: Apply Leave on Behalf ---
+@app.route('/admin/apply-leave', methods=['GET', 'POST'])
+def admin_apply_leave():
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    conn = get_db()
+    trainers = conn.execute('SELECT * FROM trainers ORDER BY name').fetchall()
+    if request.method == 'POST':
+        trainer_id = int(request.form['trainer_id'])
+        leave_type = request.form['leave_type']
+        from_date = request.form['from_date']
+        to_date = request.form['to_date']
+        reason = request.form.get('reason', 'Applied by Admin')
+        days = calculate_business_days(from_date, to_date)
+        if days <= 0:
+            flash('Invalid date range', 'error')
+        else:
+            conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
+                          VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                        (trainer_id, leave_type, from_date, to_date, days, reason,
+                         date.today().strftime('%Y-%m-%d')))
+            conn.commit()
+            flash(f'Leave applied successfully for {days} day(s)!', 'success')
+            conn.close()
+            return redirect(url_for('admin_dashboard'))
+    conn.close()
+    return render_template('admin_apply_leave.html', trainers=trainers)
+
+
+# --- ADMIN: Monthly Payroll Download ---
+@app.route('/admin/download-monthly')
+def admin_download_monthly():
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    today = date.today()
+    if today.day >= 26:
+        payroll_start = date(today.year, today.month, 26)
+        if today.month == 12:
+            payroll_end = date(today.year + 1, 1, 25)
+        else:
+            payroll_end = date(today.year, today.month + 1, 25)
+    else:
+        if today.month == 1:
+            payroll_start = date(today.year - 1, 12, 26)
+        else:
+            payroll_start = date(today.year, today.month - 1, 26)
+        payroll_end = date(today.year, today.month, 25)
+    conn = get_db()
+    trainers = conn.execute('SELECT * FROM trainers ORDER BY name').fetchall()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Name', 'DOJ', 'AL Used (This Month)', 'SL Used (This Month)',
+                     'CL Used (This Month)', 'Total Days on Leave'])
+    for t in trainers:
+        leaves = conn.execute('''SELECT leave_type, SUM(days) as total FROM leaves
+                               WHERE trainer_id = ? AND from_date >= ? AND from_date <= ?
+                               GROUP BY leave_type''',
+                             (t['id'], payroll_start.strftime('%Y-%m-%d'),
+                              payroll_end.strftime('%Y-%m-%d'))).fetchall()
+        monthly = {'AL': 0, 'SL': 0, 'CL': 0}
+        for l in leaves:
+            monthly[l['leave_type']] = l['total']
+        total = monthly['AL'] + monthly['SL'] + monthly['CL']
+        writer.writerow([t['name'], t['doj'], monthly['AL'], monthly['SL'], monthly['CL'], total])
+    conn.close()
+    output.seek(0)
+    month_label = payroll_start.strftime('%d%b') + '_to_' + payroll_end.strftime('%d%b%Y')
+    return send_file(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f'Payroll_Leave_{month_label}.csv'
     )
 
 

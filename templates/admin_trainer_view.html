@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Detail - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { color: white; font-size: 18px; }
+        .navbar a { color: white; text-decoration: none; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 900px; margin: 24px auto; padding: 0 16px; }
+        .btn-back { display: inline-block; margin-bottom: 16px; color: #667eea; text-decoration: none; font-size: 14px; }
+        .info { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .info h1 { color: #333; font-size: 22px; margin-bottom: 8px; }
+        .info p { color: #666; font-size: 14px; }
+        .balance-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .balance-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); text-align: center; }
+        .balance-card h3 { font-size: 13px; color: #666; }
+        .balance-card .number { font-size: 28px; font-weight: 700; }
+        .balance-card .detail { font-size: 11px; color: #999; }
+        .balance-card.al { border-top: 4px solid #667eea; }
+        .balance-card.sl { border-top: 4px solid #f59e0b; }
+        .balance-card.cl { border-top: 4px solid #10b981; }
+        .table-wrap { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8f9fa; color: #555; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-al { background: #eef2ff; color: #667eea; }
+        .badge-sl { background: #fef3c7; color: #d97706; }
+        .badge-cl { background: #d1fae5; color: #059669; }
+        .del-btn { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .flash { padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .flash.success { background: #e0ffe0; color: #060; }
+    </style>
+</head>
+<body>
+    <div class="navbar"><h2>🔐 Admin Panel</h2><a href="{{ url_for('admin_dashboard') }}">Back</a></div>
+    <div class="container">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-back">← Back to Summary</a>
+        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+        <div class="info">
+            <h1>{{ trainer['name'] }}</h1>
+            <p>DOJ: {{ trainer['doj'] }} | Location: {{ trainer['location'] }} | Username: {{ trainer['username'] }}</p>
+        </div>
+        <div class="balance-cards">
+            <div class="balance-card al"><h3>Annual Leave</h3><div class="number">{{ balance['AL']['pending'] }}</div><div class="detail">Earned: {{ balance['AL']['earned'] }} | Used: {{ balance['AL']['used'] }}</div></div>
+            <div class="balance-card sl"><h3>Sick Leave</h3><div class="number">{{ balance['SL']['pending'] }}</div><div class="detail">Earned: {{ balance['SL']['earned'] }} | Used: {{ balance['SL']['used'] }}</div></div>
+            <div class="balance-card cl"><h3>Casual Leave</h3><div class="number">{{ balance['CL']['pending'] }}</div><div class="detail">Earned: {{ balance['CL']['earned'] }} | Used: {{ balance['CL']['used'] }}</div></div>
+        </div>
+        <div class="table-wrap">
+            <h2 style="margin-bottom:12px;">Leave History</h2>
+            {% if leaves %}
+            <table>
+                <thead><tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Applied On</th><th>Action</th></tr></thead>
+                <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td><span class="badge badge-{{ leave['leave_type']|lower }}">{{ leave['leave_type'] }}</span></td>
+                    <td>{{ leave['from_date'] }}</td><td>{{ leave['to_date'] }}</td>
+                    <td>{{ leave['days'] }}</td><td>{{ leave['reason'] or '-' }}</td>
+                    <td>{{ leave['applied_on'] }}</td>
+                    <td><form method="POST" action="{{ url_for('admin_delete_leave', leave_id=leave['id']) }}" onsubmit="return confirm('Delete this leave?')"><button class="del-btn">Delete</button></form></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}<p style="text-align:center;color:#999;padding:20px;">No leaves recorded.</p>{% endif %}
+        </div>
+    </div>
+</body>
+</html>

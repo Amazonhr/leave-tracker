@@ -43,8 +43,11 @@
         <div class="header">
             <h1>Trainer Leave Summary</h1>
             <div class="download-btns">
-                <a href="{{ url_for('admin_download') }}" class="download-btn">📥 Download Summary</a>
-                <a href="{{ url_for('admin_download_detail') }}" class="download-btn detail">📥 Download Detail</a>
+                <a href="{{ url_for('admin_add_trainer') }}" class="download-btn" style="background:#667eea;">+ Add Trainer</a>
+                <a href="{{ url_for('admin_apply_leave') }}" class="download-btn" style="background:#8b5cf6;">+ Apply Leave</a>
+                <a href="{{ url_for('admin_download_monthly') }}" class="download-btn">📥 Payroll Month</a>
+                <a href="{{ url_for('admin_download') }}" class="download-btn">📥 Summary</a>
+                <a href="{{ url_for('admin_download_detail') }}" class="download-btn detail">📥 Detail</a>
             </div>
         </div>
         
@@ -57,6 +60,7 @@
                         <th colspan="3" class="section-header">Annual Leave (AL)</th>
                         <th colspan="3" class="section-header">Sick Leave (SL)</th>
                         <th colspan="3" class="section-header">Casual Leave (CL)</th>
+                        <th rowspan="2">Actions</th>
                     </tr>
                     <tr>
                         <th>Earned</th><th>Used</th><th>Pending</th>
@@ -67,7 +71,7 @@
                 <tbody>
                     {% for t in trainers %}
                     <tr>
-                        <td class="name-col">{{ t['name'] }}</td>
+                        <td class="name-col"><a href="{{ url_for('admin_trainer_view', trainer_id=t['id']) }}" style="color:#667eea;text-decoration:none;font-weight:600;">{{ t['name'] }}</a></td>
                         <td>{{ t['doj'] }}</td>
                         <td class="earned">{{ t['al_earned'] }}</td>
                         <td class="used">{{ t['al_used'] }}</td>
@@ -78,6 +82,10 @@
                         <td class="earned">{{ t['cl_earned'] }}</td>
                         <td class="used">{{ t['cl_used'] }}</td>
                         <td class="pending">{{ t['cl_pending'] }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_reset_password', trainer_id=t['id']) }}" style="font-size:11px;color:#667eea;">🔑</a>
+                            <form method="POST" action="{{ url_for('admin_remove_trainer', trainer_id=t['id']) }}" style="display:inline;" onsubmit="return confirm('Remove {{ t.name }}?')"><button style="font-size:11px;background:none;border:none;color:#ef4444;cursor:pointer;">❌</button></form>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
