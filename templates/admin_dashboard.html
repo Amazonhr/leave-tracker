@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Leave Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { color: white; font-size: 18px; }
+        .nav-links { display: flex; gap: 12px; }
+        .navbar a { color: white; text-decoration: none; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .navbar a:hover { background: rgba(255,255,255,0.25); }
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .header h1 { color: #333; font-size: 24px; }
+        .download-btns { display: flex; gap: 10px; }
+        .download-btn { background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .download-btn:hover { background: #059669; }
+        .download-btn.detail { background: #667eea; }
+        .table-wrap { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid #eee; font-size: 13px; }
+        th { background: #f8f9fa; color: #555; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        .name-col { text-align: left; font-weight: 500; }
+        .earned { color: #667eea; }
+        .used { color: #ef4444; }
+        .pending { color: #10b981; font-weight: 700; }
+        .section-header { background: #1a1a2e; color: white; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>🔐 Admin Panel - Leave Tracker</h2>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_leaves') }}">All Leaves</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>Trainer Leave Summary</h1>
+            <div class="download-btns">
+                <a href="{{ url_for('admin_download') }}" class="download-btn">📥 Download Summary</a>
+                <a href="{{ url_for('admin_download_detail') }}" class="download-btn detail">📥 Download Detail</a>
+            </div>
+        </div>
+        
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="name-col">Trainer Name</th>
+                        <th rowspan="2">DOJ</th>
+                        <th colspan="3" class="section-header">Annual Leave (AL)</th>
+                        <th colspan="3" class="section-header">Sick Leave (SL)</th>
+                        <th colspan="3" class="section-header">Casual Leave (CL)</th>
+                    </tr>
+                    <tr>
+                        <th>Earned</th><th>Used</th><th>Pending</th>
+                        <th>Earned</th><th>Used</th><th>Pending</th>
+                        <th>Earned</th><th>Used</th><th>Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in trainers %}
+                    <tr>
+                        <td class="name-col">{{ t['name'] }}</td>
+                        <td>{{ t['doj'] }}</td>
+                        <td class="earned">{{ t['al_earned'] }}</td>
+                        <td class="used">{{ t['al_used'] }}</td>
+                        <td class="pending">{{ t['al_pending'] }}</td>
+                        <td class="earned">{{ t['sl_earned'] }}</td>
+                        <td class="used">{{ t['sl_used'] }}</td>
+                        <td class="pending">{{ t['sl_pending'] }}</td>
+                        <td class="earned">{{ t['cl_earned'] }}</td>
+                        <td class="used">{{ t['cl_used'] }}</td>
+                        <td class="pending">{{ t['cl_pending'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

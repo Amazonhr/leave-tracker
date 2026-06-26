@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Leaves - Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { color: white; font-size: 18px; }
+        .nav-links { display: flex; gap: 12px; }
+        .navbar a { color: white; text-decoration: none; background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+        .header { margin-bottom: 24px; }
+        .header h1 { color: #333; font-size: 24px; }
+        .table-wrap { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8f9fa; color: #555; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-al { background: #eef2ff; color: #667eea; }
+        .badge-sl { background: #fef3c7; color: #d97706; }
+        .badge-cl { background: #d1fae5; color: #059669; }
+        .empty { text-align: center; color: #999; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>🔐 Admin Panel</h2>
+        <div class="nav-links">
+            <a href="{{ url_for('admin_dashboard') }}">Summary</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>All Leave Records</h1>
+        </div>
+        
+        <div class="table-wrap">
+            {% if leaves %}
+            <table>
+                <thead>
+                    <tr><th>Trainer</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Applied On</th></tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td><strong>{{ leave['trainer_name'] }}</strong></td>
+                        <td><span class="badge badge-{{ leave['leave_type']|lower }}">{{ leave['leave_type'] }}</span></td>
+                        <td>{{ leave['from_date'] }}</td>
+                        <td>{{ leave['to_date'] }}</td>
+                        <td>{{ leave['days'] }}</td>
+                        <td>{{ leave['reason'] or '-' }}</td>
+                        <td>{{ leave['applied_on'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No leave records yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - Leave Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { color: white; font-size: 18px; }
+        .navbar a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 6px; font-size: 14px; }
+        .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+        .welcome { margin-bottom: 24px; }
+        .welcome h1 { color: #333; font-size: 24px; }
+        .welcome p { color: #666; font-size: 14px; }
+        .balance-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .balance-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .balance-card h3 { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .balance-card .number { font-size: 32px; font-weight: 700; color: #333; }
+        .balance-card .detail { font-size: 12px; color: #999; margin-top: 4px; }
+        .balance-card.al { border-top: 4px solid #667eea; }
+        .balance-card.sl { border-top: 4px solid #f59e0b; }
+        .balance-card.cl { border-top: 4px solid #10b981; }
+        .apply-btn { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 24px; }
+        .apply-btn:hover { transform: translateY(-2px); }
+        .history { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .history h2 { margin-bottom: 16px; color: #333; font-size: 18px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f8f9fa; color: #555; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-al { background: #eef2ff; color: #667eea; }
+        .badge-sl { background: #fef3c7; color: #d97706; }
+        .badge-cl { background: #d1fae5; color: #059669; }
+        .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; }
+        .flash.error { background: #ffe0e0; color: #c00; }
+        .flash.success { background: #e0ffe0; color: #060; }
+        .empty { text-align: center; color: #999; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h2>📋 Leave Tracker</h2>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <div class="welcome">
+            <h1>Hello, {{ session['name'] }}! 👋</h1>
+            <p>DOJ: {{ trainer['doj'] }} | Location: {{ trainer['location'] }}</p>
+        </div>
+        
+        <div class="balance-cards">
+            <div class="balance-card al">
+                <h3>Annual Leave (AL)</h3>
+                <div class="number">{{ balance['AL']['pending'] }}</div>
+                <div class="detail">Earned: {{ balance['AL']['earned'] }} | Used: {{ balance['AL']['used'] }}</div>
+            </div>
+            <div class="balance-card sl">
+                <h3>Sick Leave (SL)</h3>
+                <div class="number">{{ balance['SL']['pending'] }}</div>
+                <div class="detail">Earned: {{ balance['SL']['earned'] }} | Used: {{ balance['SL']['used'] }}</div>
+            </div>
+            <div class="balance-card cl">
+                <h3>Casual Leave (CL)</h3>
+                <div class="number">{{ balance['CL']['pending'] }}</div>
+                <div class="detail">Earned: {{ balance['CL']['earned'] }} | Used: {{ balance['CL']['used'] }}</div>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('apply_leave') }}" class="apply-btn">+ Apply Leave</a>
+        
+        <div class="history">
+            <h2>Leave History</h2>
+            {% if leaves %}
+            <table>
+                <thead>
+                    <tr><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Applied On</th></tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td><span class="badge badge-{{ leave['leave_type']|lower }}">{{ leave['leave_type'] }}</span></td>
+                        <td>{{ leave['from_date'] }}</td>
+                        <td>{{ leave['to_date'] }}</td>
+                        <td>{{ leave['days'] }}</td>
+                        <td>{{ leave['reason'] or '-' }}</td>
+                        <td>{{ leave['applied_on'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty">No leaves applied yet.</div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
