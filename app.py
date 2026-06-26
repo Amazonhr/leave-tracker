@@ -12,22 +12,22 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'leave_tracke
 
 # Trainer data
 TRAINERS = [
-    {'name': 'Anoop', 'username': 'anoop', 'password': 'Anp@2741', 'doj': '2026-03-27'},
-    {'name': 'Parishmita', 'username': 'parishmita', 'password': 'Prm@3852', 'doj': '2026-03-27'},
-    {'name': 'Sandeep Kumar', 'username': 'sandeep', 'password': 'Sdk@4963', 'doj': '2026-03-27'},
-    {'name': 'Khemchandra', 'username': 'khemchandra', 'password': 'Khm@5074', 'doj': '2026-03-27'},
-    {'name': 'Neema', 'username': 'neema', 'password': 'Nma@6185', 'doj': '2026-03-27'},
-    {'name': 'Ramesh Kumar', 'username': 'ramesh', 'password': 'Rmk@7296', 'doj': '2026-03-27'},
-    {'name': 'Sanjay Kumar', 'username': 'sanjay', 'password': 'Sjk@8307', 'doj': '2026-03-27'},
+    {'name': 'Anoop', 'username': 'anoop', 'password': 'Anp@2741', 'doj': '2026-03-26'},
+    {'name': 'Parishmita', 'username': 'parishmita', 'password': 'Prm@3852', 'doj': '2026-03-26'},
+    {'name': 'Sandeep Kumar', 'username': 'sandeep', 'password': 'Sdk@4963', 'doj': '2026-03-26'},
+    {'name': 'Khemchandra', 'username': 'khemchandra', 'password': 'Khm@5074', 'doj': '2026-03-26'},
+    {'name': 'Neema', 'username': 'neema', 'password': 'Nma@6185', 'doj': '2026-03-26'},
+    {'name': 'Ramesh Kumar', 'username': 'ramesh', 'password': 'Rmk@7296', 'doj': '2026-03-26'},
+    {'name': 'Sanjay Kumar', 'username': 'sanjay', 'password': 'Sjk@8307', 'doj': '2026-03-26'},
     {'name': 'Shreya', 'username': 'shreya', 'password': 'Sry@9418', 'doj': '2026-05-17'},
-    {'name': 'Kanhaiya', 'username': 'kanhaiya', 'password': 'Knh@1529', 'doj': '2026-03-27'},
+    {'name': 'Kanhaiya', 'username': 'kanhaiya', 'password': 'Knh@1529', 'doj': '2026-03-26'},
     {'name': 'Manoj', 'username': 'manoj', 'password': 'Mnj@2630', 'doj': '2026-06-11'},
     {'name': 'Naveen', 'username': 'naveen', 'password': 'Nvn@3741', 'doj': '2026-05-17'},
-    {'name': 'Nitish', 'username': 'nitish', 'password': 'Nts@4852', 'doj': '2026-03-27'},
+    {'name': 'Nitish', 'username': 'nitish', 'password': 'Nts@4852', 'doj': '2026-03-26'},
     {'name': 'Rajendra', 'username': 'rajendra', 'password': 'Rjn@5963', 'doj': '2026-06-19'},
-    {'name': 'Vivek', 'username': 'vivek', 'password': 'Vvk@6074', 'doj': '2026-03-27'},
-    {'name': 'Yogesh Kumar', 'username': 'yogesh', 'password': 'Ygk@7185', 'doj': '2026-03-27'},
-    {'name': 'Ajay Kumar', 'username': 'ajay', 'password': 'Ajk@8296', 'doj': '2026-03-27'},
+    {'name': 'Vivek', 'username': 'vivek', 'password': 'Vvk@6074', 'doj': '2026-03-26'},
+    {'name': 'Yogesh Kumar', 'username': 'yogesh', 'password': 'Ygk@7185', 'doj': '2026-03-26'},
+    {'name': 'Ajay Kumar', 'username': 'ajay', 'password': 'Ajk@8296', 'doj': '2026-03-26'},
 ]
 
 ADMIN_USERNAME = 'admin'
