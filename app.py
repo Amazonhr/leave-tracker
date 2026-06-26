@@ -70,54 +70,56 @@ def init_db():
                         (t['name'], t['username'], t['password'], t['doj']))
     conn.commit()
     
-    # Pre-load past leaves (26-Apr to 25-May-2026) - only if no leaves exist yet
-    existing_leaves = conn.execute('SELECT COUNT(*) as cnt FROM leaves').fetchone()
-    if existing_leaves['cnt'] == 0:
-        past_leaves = [
-            # Khemchandra: 5 leaves (CL:1, SL:1, AL:3)
-            ('khemchandra', 'CL', '2026-04-29', '2026-04-29', 1, 'Past leave'),
-            ('khemchandra', 'SL', '2026-04-30', '2026-04-30', 1, 'Past leave'),
-            ('khemchandra', 'AL', '2026-05-01', '2026-05-01', 1, 'Past leave'),
-            ('khemchandra', 'AL', '2026-05-02', '2026-05-02', 1, 'Past leave'),
-            ('khemchandra', 'AL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
-            # Ajay Kumar: 1 leave (CL:1)
-            ('ajay', 'CL', '2026-04-28', '2026-04-28', 1, 'Past leave'),
-            # Ramesh Kumar: 3 leaves (CL:1, SL:1, AL:1)
-            ('ramesh', 'CL', '2026-04-27', '2026-04-27', 1, 'Past leave'),
-            ('ramesh', 'SL', '2026-05-08', '2026-05-08', 1, 'Past leave'),
-            ('ramesh', 'AL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
-            # Sanjay Kumar: 1 leave (CL:1)
-            ('sanjay', 'CL', '2026-05-12', '2026-05-12', 1, 'Past leave'),
-            # Sandeep Kumar: 1 leave (CL:1)
-            ('sandeep', 'CL', '2026-05-07', '2026-05-07', 1, 'Past leave'),
-            # Yogesh Kumar: 2 leaves (CL:1, SL:1)
-            ('yogesh', 'CL', '2026-04-30', '2026-04-30', 1, 'Past leave'),
-            ('yogesh', 'SL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
-            # Nitish: 1 leave (CL:1)
-            ('nitish', 'CL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
-            # Vivek: 1 leave (CL:1)
-            ('vivek', 'CL', '2026-05-17', '2026-05-17', 1, 'Past leave'),
-            # Kanhaiya: 0 leaves in this period
-            # Anoop: 5 leaves (CL:1, SL:1, AL:3)
-            ('anoop', 'CL', '2026-04-28', '2026-04-28', 1, 'Past leave'),
-            ('anoop', 'SL', '2026-05-08', '2026-05-08', 1, 'Past leave'),
-            ('anoop', 'AL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
-            ('anoop', 'AL', '2026-05-10', '2026-05-10', 1, 'Past leave'),
-            ('anoop', 'AL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
-            # Neema: 2 leaves (CL:1, SL:1)
-            ('neema', 'CL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
-            ('neema', 'SL', '2026-05-10', '2026-05-10', 1, 'Past leave'),
-            # Shreya: 1 leave (AL:1)
-            ('shreya', 'AL', '2026-05-21', '2026-05-21', 1, 'Past leave'),
-        ]
+    # Reset: Delete all leaves and re-insert only valid past leaves
+    conn.execute('DELETE FROM leaves')
+    conn.commit()
+    
+    # Pre-load past leaves (26-Apr to 25-May-2026)
+    past_leaves = [
+        # Khemchandra: 5 leaves (CL:1, SL:1, AL:3)
+        ('khemchandra', 'CL', '2026-04-29', '2026-04-29', 1, 'Past leave'),
+        ('khemchandra', 'SL', '2026-04-30', '2026-04-30', 1, 'Past leave'),
+        ('khemchandra', 'AL', '2026-05-01', '2026-05-01', 1, 'Past leave'),
+        ('khemchandra', 'AL', '2026-05-02', '2026-05-02', 1, 'Past leave'),
+        ('khemchandra', 'AL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
+        # Ajay Kumar: 1 leave (CL:1)
+        ('ajay', 'CL', '2026-04-28', '2026-04-28', 1, 'Past leave'),
+        # Ramesh Kumar: 3 leaves (CL:1, SL:1, AL:1)
+        ('ramesh', 'CL', '2026-04-27', '2026-04-27', 1, 'Past leave'),
+        ('ramesh', 'SL', '2026-05-08', '2026-05-08', 1, 'Past leave'),
+        ('ramesh', 'AL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
+        # Sanjay Kumar: 1 leave (CL:1)
+        ('sanjay', 'CL', '2026-05-12', '2026-05-12', 1, 'Past leave'),
+        # Sandeep Kumar: 1 leave (CL:1)
+        ('sandeep', 'CL', '2026-05-07', '2026-05-07', 1, 'Past leave'),
+        # Yogesh Kumar: 2 leaves (CL:1, SL:1)
+        ('yogesh', 'CL', '2026-04-30', '2026-04-30', 1, 'Past leave'),
+        ('yogesh', 'SL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
+        # Nitish: 1 leave (CL:1)
+        ('nitish', 'CL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
+        # Vivek: 1 leave (CL:1)
+        ('vivek', 'CL', '2026-05-17', '2026-05-17', 1, 'Past leave'),
+        # Kanhaiya: 0 leaves in this period
+        # Anoop: 5 leaves (CL:1, SL:1, AL:3)
+        ('anoop', 'CL', '2026-04-28', '2026-04-28', 1, 'Past leave'),
+        ('anoop', 'SL', '2026-05-08', '2026-05-08', 1, 'Past leave'),
+        ('anoop', 'AL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
+        ('anoop', 'AL', '2026-05-10', '2026-05-10', 1, 'Past leave'),
+        ('anoop', 'AL', '2026-05-18', '2026-05-18', 1, 'Past leave'),
+        # Neema: 2 leaves (CL:1, SL:1)
+        ('neema', 'CL', '2026-05-09', '2026-05-09', 1, 'Past leave'),
+        ('neema', 'SL', '2026-05-10', '2026-05-10', 1, 'Past leave'),
+        # Shreya: 1 leave (AL:1)
+        ('shreya', 'AL', '2026-05-21', '2026-05-21', 1, 'Past leave'),
+    ]
         
-        for username, leave_type, from_date, to_date, days, reason in past_leaves:
-            trainer = conn.execute('SELECT id FROM trainers WHERE username = ?', (username,)).fetchone()
-            if trainer:
-                conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
-                              VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                            (trainer['id'], leave_type, from_date, to_date, days, reason, '2026-05-25'))
-        conn.commit()
+    for username, leave_type, from_date, to_date, days, reason in past_leaves:
+        trainer = conn.execute('SELECT id FROM trainers WHERE username = ?', (username,)).fetchone()
+        if trainer:
+            conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
+                          VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                        (trainer['id'], leave_type, from_date, to_date, days, reason, '2026-05-25'))
+    conn.commit()
     
     conn.close()
 
@@ -241,24 +243,29 @@ def apply_leave():
         
         days = calculate_business_days(from_date, to_date)
         
-        # Check balance
-        earned = calculate_leave_balance(trainer['doj'])
-        used = get_used_leaves(trainer['id'])
-        available = earned[leave_type] - used[leave_type]
-        
-        if days > available:
-            flash(f'Insufficient {leave_type} balance. Available: {available}, Requested: {days}', 'error')
+        # Block leaves before 26-May-2026
+        min_date = '2026-05-26'
+        if from_date < min_date:
+            flash('Cannot apply leave before 26-May-2026. Contact admin for past leaves.', 'error')
         elif days <= 0:
             flash('Invalid date range', 'error')
         else:
-            conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
-                          VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                        (trainer['id'], leave_type, from_date, to_date, days, reason, 
-                         date.today().strftime('%Y-%m-%d')))
-            conn.commit()
-            flash(f'{leave_type} for {days} day(s) applied successfully!', 'success')
-            conn.close()
-            return redirect(url_for('trainer_dashboard'))
+            # Check balance
+            earned = calculate_leave_balance(trainer['doj'])
+            used = get_used_leaves(trainer['id'])
+            available = earned[leave_type] - used[leave_type]
+            
+            if days > available:
+                flash(f'Insufficient {leave_type} balance. Available: {available}, Requested: {days}', 'error')
+            else:
+                conn.execute('''INSERT INTO leaves (trainer_id, leave_type, from_date, to_date, days, reason, applied_on)
+                              VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                            (trainer['id'], leave_type, from_date, to_date, days, reason, 
+                             date.today().strftime('%Y-%m-%d')))
+                conn.commit()
+                flash(f'{leave_type} for {days} day(s) applied successfully!', 'success')
+                conn.close()
+                return redirect(url_for('trainer_dashboard'))
     
     earned = calculate_leave_balance(trainer['doj'])
     used = get_used_leaves(trainer['id'])
