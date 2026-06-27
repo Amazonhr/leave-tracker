@@ -242,20 +242,28 @@ def apply_leave():
         
         days = calculate_business_days(from_date, to_date)
         
-        # Block leaves outside current payroll month (26th to 25th)
+        # Block leaves outside allowed payroll window
         today = date.today()
-        if today.day >= 26:
-            payroll_start = date(today.year, today.month, 26)
-            if today.month == 12:
-                payroll_end = date(today.year + 1, 1, 25)
-            else:
-                payroll_end = date(today.year, today.month + 1, 25)
+        
+        # Grace period: Until 30-Jun-2026, allow 26-May to 25-Jun
+        grace_end = date(2026, 6, 30)
+        if today <= grace_end:
+            payroll_start = date(2026, 5, 26)
+            payroll_end = date(2026, 6, 25)
         else:
-            if today.month == 1:
-                payroll_start = date(today.year - 1, 12, 26)
+            # Normal payroll month logic (26th to 25th)
+            if today.day >= 26:
+                payroll_start = date(today.year, today.month, 26)
+                if today.month == 12:
+                    payroll_end = date(today.year + 1, 1, 25)
+                else:
+                    payroll_end = date(today.year, today.month + 1, 25)
             else:
-                payroll_start = date(today.year, today.month - 1, 26)
-            payroll_end = date(today.year, today.month, 25)
+                if today.month == 1:
+                    payroll_start = date(today.year - 1, 12, 26)
+                else:
+                    payroll_start = date(today.year, today.month - 1, 26)
+                payroll_end = date(today.year, today.month, 25)
         
         from_date_obj = datetime.strptime(from_date, '%Y-%m-%d').date()
         
