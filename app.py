@@ -569,6 +569,41 @@ def admin_download_monthly():
     )
 
 
+# --- ADMIN: Download by Custom Date Range ---
+@app.route('/admin/download-range', methods=['GET', 'POST'])
+def admin_download_range():
+    if 'user' not in session or session['user'] != 'admin':
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+        conn = get_db()
+        trainers = conn.execute('SELECT * FROM trainers ORDER BY name').fetchall()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(['Name', 'DOJ', 'AL Used', 'SL Used', 'CL Used', 'Total Days on Leave'])
+        for t in trainers:
+            leaves = conn.execute('''SELECT leave_type, SUM(days) as total FROM leaves
+                                   WHERE trainer_id = ? AND from_date >= ? AND from_date <= ?
+                                   GROUP BY leave_type''',
+                                 (t['id'], start_date, end_date)).fetchall()
+            monthly = {'AL': 0, 'SL': 0, 'CL': 0}
+            for l in leaves:
+                monthly[l['leave_type']] = l['total']
+            total = monthly['AL'] + monthly['SL'] + monthly['CL']
+            writer.writerow([t['name'], t['doj'], monthly['AL'], monthly['SL'], monthly['CL'], total])
+        conn.close()
+        output.seek(0)
+        label = start_date + '_to_' + end_date
+        return send_file(
+            io.BytesIO(output.getvalue().encode('utf-8')),
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=f'Leave_Report_{label}.csv'
+        )
+    return render_template('admin_download_range.html')
+
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
